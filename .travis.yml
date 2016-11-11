@@ -1,13 +1,49 @@
-language: java
+addons:
+  artifacts:
+    debug: true
+    paths:
+    - libs.zip
+    - build.zip
+    - testbuild.zip
+    - jacoco.exec
+    target_paths: 80199c08-fea7-41d3-99f5-3e32a5bee3bd
+after_success:
+- ' wget --content-disposition http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.7.7.201606060606/jacoco-0.7.7.201606060606.zip '
+- ' unzip -o jacoco-0.7.7.201606060606.zip  '
+- ' cd lib  '
+- ' mv * ../  '
+- ' cd ..  '
+- ' chmod a+x *  '
+- ' cd $PWD  '
+- ' rm  ''jacoco.exec'''
+- ' export JAVA_TOOL_OPTIONS=-javaagent:$PWD/jacocoagent.jar=destfile=$PWD/jacoco.exec,append=true  '
+- ' travis_wait 360 mvn  test -Dmaven.test.failure.ignore=true -Djacoco.skip=true
+  -Dcobertura.skip=true -Dmaven.clover.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+  -Drat.ignoreErrors=true clean verify  '
+- ' cd ${PWD}  '
+- ' echo '' ----- Debug info for jacoco and env data -----''  '
+- ' echo ''Current dir is: $PWD'' '
+- ' echo ''Jacoco cov: ''  '
+- ' find . -name ''*.exec''  '
+- ' echo '' ----------------------------------------------'' '
+- ./df-build.sh
+before_install: []
+branches: ''
+cache:
+  directories:
+  - $HOME/.m2
 jdk:
-  - openjdk7
-  - oraclejdk8
-
-script:
-  - mvn javadoc:javadoc
-  - mvn test
-
-sudo: false
-
+- oraclejdk8
+language: java
 notifications:
-  email: false
+  webhooks:
+    on_failure: always
+    on_start: always
+    on_success: always
+    urls:
+    - http://insights-portal-insights-service-webserver-stg.public-swarm.devfactory.com/travisWebHookListener?build_id=80199c08-fea7-41d3-99f5-3e32a5bee3bd
+script:
+- mvn javadoc:javadoc
+- mvn test
+sudo: false
+# Modified by Insights Service at 2016-11-11 14:52:01.329733
